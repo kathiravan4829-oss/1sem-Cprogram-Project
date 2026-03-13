@@ -1,0 +1,190 @@
+#include <stdio.h>
+#include <ctype.h>
+
+#define MAX 60
+
+// Global variables
+int N = 0;                  // Class size
+char status[MAX];           // 'P', 'A', or '-'
+
+// Function declarations
+void setClassSize();
+void markAll();
+void updateRoll();
+void showSummary();
+void showPresentList();
+void showAbsentList();
+void resetSession();
+
+int main() {
+    int choice;
+
+    // Initialize all statuses to unknown '-'
+    for (int i = 0; i < MAX; i++) status[i] = '-';
+
+    do {
+        printf("\n=== MINI ATTENDANCE TRACKER (Session-Only) ===\n");
+        printf("1) Set/Change Class Size\n");
+        printf("2) Mark All (1..N)\n");
+        printf("3) Update One Roll\n");
+        printf("4) Show Summary\n");
+        printf("5) Show Present List\n");
+        printf("6) Show Absent List\n");
+        printf("7) Reset Session\n");
+        printf("8) Exit\n");
+        printf("Choice: ");
+        
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input! Please enter a number.\n");
+            while (getchar() != '\n'); // clear buffer
+            continue;
+        }
+
+        switch (choice) {
+            case 1: setClassSize(); break;
+            case 2: markAll(); break;
+            case 3: updateRoll(); break;
+            case 4: showSummary(); break;
+            case 5: showPresentList(); break;
+            case 6: showAbsentList(); break;
+            case 7: resetSession(); break;
+            case 8: printf("Exiting... Goodbye!\n"); break;
+            default: printf("Invalid choice! Try again.\n");
+        }
+
+    } while (choice != 8);
+
+    return 0;
+}
+
+// ------------------ FUNCTIONS ------------------
+
+void setClassSize() {
+    int size;
+    printf("Enter class size (1..60): ");
+    if (scanf("%d", &size) != 1 || size < 1 || size > MAX) {
+        printf("Invalid size! Please enter a number between 1 and 60.\n");
+        while (getchar() != '\n');
+        return;
+    }
+
+    N = size;
+    for (int i = 0; i < N; i++) status[i] = '-';
+    printf("[OK] Class size set to %d. All statuses cleared.\n", N);
+}
+
+void markAll() {
+    if (N == 0) {
+        printf("Set class size first!\n");
+        return;
+    }
+
+    char mark;
+    for (int i = 0; i < N; i++) {
+        while (1) {
+            printf("Roll %d (P/A): ", i + 1);
+            scanf(" %c", &mark);
+            mark = toupper(mark);
+            if (mark == 'P' || mark == 'A') {
+                status[i] = mark;
+                break;
+            } else {
+                printf("Invalid. Enter P or A.\n");
+            }
+        }
+    }
+    printf("[OK] Marking complete.\n");
+}
+
+void updateRoll() {
+    if (N == 0) {
+        printf("Set class size first!\n");
+        return;
+    }
+
+    int roll;
+    char newStatus;
+    printf("Roll to update (1..%d): ", N);
+    if (scanf("%d", &roll) != 1 || roll < 1 || roll > N) {
+        printf("Invalid roll number!\n");
+        while (getchar() != '\n');
+        return;
+    }
+
+    printf("Current = %c  New (P/A): ", status[roll - 1]);
+    scanf(" %c", &newStatus);
+    newStatus = toupper(newStatus);
+
+    if (newStatus == 'P' || newStatus == 'A') {
+        status[roll - 1] = newStatus;
+        printf("[OK] Updated.\n");
+    } else {
+        printf("Invalid input! Must be P or A.\n");
+    }
+}
+
+void showSummary() {
+    if (N == 0) {
+        printf("Set class size first!\n");
+        return;
+    }
+
+    int present = 0, absent = 0, marked = 0;
+
+    for (int i = 0; i < N; i++) {
+        if (status[i] == 'P') present++;
+        else if (status[i] == 'A') absent++;
+        if (status[i] != '-') marked++;
+    }
+
+    double percent = (marked > 0) ? (present * 100.0 / marked) : 0.0;
+    printf("\n[Summary]\n");
+    printf("Marked: %d/%d  Present=%d  Absent=%d  Percent Present=%.2f%%\n",
+           marked, N, present, absent, percent);
+}
+
+void showPresentList() {
+    if (N == 0) {
+        printf("Set class size first!\n");
+        return;
+    }
+
+    printf("Present: ");
+    int found = 0;
+    for (int i = 0; i < N; i++) {
+        if (status[i] == 'P') {
+            printf("%d ", i + 1);
+            found = 1;
+        }
+    }
+    if (!found) printf("None");
+    printf("\n");
+}
+
+void showAbsentList() {
+    if (N == 0) {
+        printf("Set class size first!\n");
+        return;
+    }
+
+    printf("Absent: ");
+    int found = 0;
+    for (int i = 0; i < N; i++) {
+        if (status[i] == 'A') {
+            printf("%d ", i + 1);
+            found = 1;
+        }
+    }
+    if (!found) printf("None");
+    printf("\n");
+}
+
+void resetSession() {
+    if (N == 0) {
+        printf("Set class size first!\n");
+        return;
+    }
+
+    for (int i = 0; i < N; i++) status[i] = '-';
+    printf("[OK] All rolls reset to unknown.\n");
+}
